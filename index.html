@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maieutik - Résolution d'Exercices par IA</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Inter via Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Markdown & LaTeX Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+    <div id="app" class="min-h-screen">
+        <!-- Loading state -->
+        <div id="loadingApp" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+            <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <p class="mt-4 text-gray-600">Chargement de l'application...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="env.js"></script>
+
+    <!-- Supabase JS SDK via CDN (ES Module) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+        }
+    }
+    </script>
+
+    <!-- Templates HTML -->
+    <template id="homePage">
+
+        <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">M</span>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Maieutik</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="router.navigate('login')" class="px-6 py-2 text-gray-700 hover:text-gray-900 font-medium transition">Se connecter</button>
+                    <button onclick="router.navigate('signup')" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium hover:shadow-lg transition">S'inscrire</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="bg-gradient-to-b from-blue-50 to-white">
+            <!-- Hero Section -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h1 class="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
+                        Résolvez vos exercices avec l'IA
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        Maieutik utilise DeepSeek R1 pour vous fournir une démarche détaillée et une solution professionnelle à chaque problème. Apprenez en voyant le raisonnement complet.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="router.navigate('signup')" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-xl transition transform hover:scale-105">
+                            Commencer Gratuitement
+                        </button>
+                        <button onclick="router.navigate('login')" class="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition">
+                            Déjà inscrit ?
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100">
+                        <div class="text-3xl mb-4">🧠</div>
+                        <h3 class="text-lg font-bold mb-3">IA Avancée</h3>
+                        <p class="text-gray-600">DeepSeek R1 fournit une démarche de raisonnement complète et détaillée.</p>
+                    </div>
+                    <div class="p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100">
+                        <div class="text-3xl mb-4">📝</div>
+                        <h3 class="text-lg font-bold mb-3">Historique</h3>
+                        <p class="text-gray-600">Conservez tous vos exercices résolus pour consulter ultérieurement.</p>
+                    </div>
+                    <div class="p-8 bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-100">
+                        <div class="text-3xl mb-4">🔐</div>
+                        <h3 class="text-lg font-bold mb-3">Sécurisé</h3>
+                        <p class="text-gray-600">Vos données sont protégées avec Row Level Security (RLS).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-gray-900 text-gray-400 py-12 mt-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p>&copy; 2025 Maieutik. Tous droits réservés.</p>
+            </div>
+        </footer>
+    </template>
+
+    <!-- Login Page -->
+    <template id="loginPage">
+        <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center px-4">
+            <div class="w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="flex justify-center mb-8">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">M</span>
+                        </div>
+                    </div>
+
+                    <h1 class="text-2xl font-bold text-center mb-2">Bienvenue</h1>
+                    <p class="text-center text-gray-600 mb-8">Connectez-vous à votre compte</p>
+
+                    <form id="loginForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="vous@exemple.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                            <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="••••••••">
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transition">
+                            Se connecter
+                        </button>
+                    </form>
+
+                    <div id="loginError" class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg hidden"></div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">Pas de compte ?
+                            <button onclick="router.navigate('signup')" class="text-blue-600 font-semibold hover:underline">S'inscrire</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Signup Page -->
+    <template id="signupPage">
+        <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center px-4">
+            <div class="w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <div class="flex justify-center mb-8">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">M</span>
+                        </div>
+                    </div>
+
+                    <h1 class="text-2xl font-bold text-center mb-2">Créer un compte</h1>
+                    <p class="text-center text-gray-600 mb-8">Rejoignez Maieutik gratuitement</p>
+
+                    <form id="signupForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                            <input type="text" id="signupName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="Votre nom">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="signupEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="vous@exemple.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                            <input type="password" id="signupPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="Minimum 6 caractères">
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transition">
+                            S'inscrire
+                        </button>
+                    </form>
+
+                    <div id="signupError" class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg hidden"></div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">Déjà inscrit ?
+                            <button onclick="router.navigate('login')" class="text-blue-600 font-semibold hover:underline">Se connecter</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Dashboard Page -->
+    <template id="dashboardPage">
+        <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">M</span>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Maieutik</span>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="router.navigate('profile')" class="px-6 py-2 text-gray-700 hover:text-gray-900 font-medium transition">Profil</button>
+                    <button onclick="authManager.logout()" class="px-6 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition">Déconnexion</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold mb-2">Tableau de bord</h1>
+                <p class="text-gray-600">Gérez vos exercices et commencez une nouvelle résolution</p>
+            </div>
+
+            <div class="mb-8">
+                <button onclick="router.newExercise()" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+                    + Nouvelle résolution
+                </button>
+            </div>
+
+            <div>
+                <h2 class="text-xl font-bold mb-6">Exercices récents</h2>
+                <div id="exercisesList" class="grid gap-4">
+                    <div class="p-8 bg-white rounded-xl border border-gray-200 text-center text-gray-500">
+                        Chargement de vos exercices...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Exercise Solver Page -->
+    <template id="exercisePage">
+        <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="router.navigate('dashboard')" class="text-gray-600 hover:text-gray-900">←</button>
+                    <span class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Résolution</span>
+                </div>
+                <button onclick="authManager.logout()" class="px-6 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition">Déconnexion</button>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div>
+                    <h2 class="text-2xl font-bold mb-6">Énoncé de l'exercice</h2>
+                    <form id="exerciseForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mode IA</label>
+                            <select id="aiMode" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition">
+                                <option value="solve">Resolution complete</option>
+                                <option value="hint">Indice progressif</option>
+                                <option value="guide">Questions guidees</option>
+                                <option value="review">Corriger ma tentative</option>
+                                <option value="explain">Expliquer autrement</option>
+                            </select>
+                        </div>
+                        <textarea id="exerciseInput" placeholder="Collez votre enonce d'exercice ici..." class="w-full h-52 p-6 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"></textarea>
+                        <textarea id="attemptInput" placeholder="Votre tentative, vos calculs ou votre reponse a corriger..." class="w-full h-32 p-5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"></textarea>
+                        <div class="p-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Image ou PDF</label>
+                            <input type="file" id="exerciseFiles" accept="image/*,application/pdf" multiple class="block w-full text-sm text-gray-600">
+                            <div id="fileList" class="mt-3 text-sm text-gray-500"></div>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transition disabled:opacity-50" id="solveBtn">
+                            Résoudre avec IA
+                        </button>
+                    </form>
+                    <div id="cacheNotice" class="mt-4 p-4 bg-amber-50 text-amber-700 rounded-lg hidden">Resultat repris depuis le cache local.</div>
+                    <div id="exerciseError" class="mt-4 p-4 bg-red-50 text-red-700 rounded-lg hidden"></div>
+                </div>
+
+                <!-- Output Section -->
+                <div>
+                    <h2 class="text-2xl font-bold mb-6">Résolution</h2>
+                    <div id="solutionContainer" class="space-y-6">
+                        <!-- Reasoning Section -->
+                        <div id="reasoningSection" class="hidden">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-blue-600 font-bold">1</span>
+                                </div>
+                                <h3 class="text-lg font-semibold">Démarche de raisonnement</h3>
+                            </div>
+                            <div id="reasoningContent" class="p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500 overflow-auto max-h-96">
+                                <div class="flex justify-center items-center h-32">
+                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Solution Section -->
+                        <div id="solutionSection" class="hidden">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-green-600 font-bold">2</span>
+                                </div>
+                                <h3 class="text-lg font-semibold">Solution</h3>
+                            </div>
+                            <div id="solutionContent" class="p-6 bg-white rounded-lg border border-gray-200 prose prose-sm max-w-none overflow-auto max-h-96">
+                                <!-- Markdown rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Profile Page -->
+    <template id="profilePage">
+        <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="router.navigate('dashboard')" class="text-gray-600 hover:text-gray-900">←</button>
+                    <span class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Profil</span>
+                </div>
+                <button onclick="authManager.logout()" class="px-6 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition">Déconnexion</button>
+            </div>
+        </nav>
+
+        <div class="max-w-2xl mx-auto px-4 py-12">
+            <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+                <h1 class="text-2xl font-bold mb-8">Informations de profil</h1>
+
+                <form id="profileForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                        <input type="text" id="profileName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="profileEmail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Statistiques</label>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-blue-50 rounded-lg">
+                                <p class="text-gray-600 text-sm">Exercices résolus</p>
+                                <p class="text-2xl font-bold text-blue-600" id="exerciseCount">0</p>
+                            </div>
+                            <div class="p-4 bg-indigo-50 rounded-lg">
+                                <p class="text-gray-600 text-sm">Compte créé</p>
+                                <p class="text-sm font-semibold text-indigo-600" id="joinDate">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <!-- Scripts -->
+    <script type="module" src="js/supabase.js"></script>
+
+    <script src="js/auth.js"></script>
+    <script src="js/deepseek.js"></script>
+    <script src="js/exercises.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
